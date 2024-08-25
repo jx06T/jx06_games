@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Game Lobby</title>
+  <style>
+    #playerInfo {
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Welcome to the Game</h1>
+  <div id="playerInfo"></div>
+  <div id="playersList"></div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    
+    let playerId = localStorage.getItem('playerId');
+    let nickname = localStorage.getItem('nickname');
+
+    if (!playerId || !nickname) {
+      nickname = prompt("Enter your nickname:");
+      playerId = Math.random().toString(36).substr(2, 9); // Create random ID
+      localStorage.setItem('playerId', playerId);
+      localStorage.setItem('nickname', nickname);
+    }
+
+    document.getElementById('playerInfo').innerText = `Your ID: ${playerId}, Nickname: ${nickname}`;
+
+    socket.emit('joinGame', { nickname, id: playerId });
+
+    socket.on('updatePlayers', (players) => {
+      const playersList = document.getElementById('playersList');
+      playersList.innerHTML = '';
+      for (let id in players) {
+        if (id !== playerId) {
+          const player = players[id];
+          const playerElement = document.createElement('div');
+          playerElement.innerText = `${player.nickname} (ID: ${id}) ${player.state}`;
+          playerElement.onclick = () => {
+            if (confirm(`Request to pair with ${player.nickname}?`)) {
+              socket.emit('requestPair', id, playerId);
+            }
+          };
+          playersList.appendChild(playerElement);
+        }
+      }
+    });
+
+    socket.on('pairRequest', ({ from, sponsor }) => {
+      if (confirm("Accept pair request?")) {
+        const roomId = Math.random().toString(36).substr(2, 9); // Create random room ID
+        socket.emit('acceptPair', { from, sponsor, me: playerId, roomId });
+        window.location.href = `/room/${roomId}`;
+      }
+    });
+
+    socket.on('pairAccepted', ({ roomId }) => {
+      window.location.href = `/room/${roomId}`;
+    });
+  </script>
+</body>
+
+</html>

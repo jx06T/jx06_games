@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Socket.IO Auth Example</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.js"></script>
+</head>
+
+<body>
+    <div id="auth">
+        <input id="username" type="text" placeholder="Username">
+        <input id="password" type="password" placeholder="Password">
+        <button onclick="register()">Register</button>
+        <button onclick="login()">Login</button>
+        <button onclick="logout()">Logout</button>
+    </div>
+    <div id="chat" style="display:none;">
+        <p>Logged in as: <span id="loggedUser"></span></p>
+    </div>
+
+    <script>
+        let socket;
+
+        function register() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            fetch('/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            }).then(response => {
+                if (response.ok) alert('Registered successfully');
+            });
+        }
+
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            fetch('/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            }).then(response => {
+                if (response.ok) {
+                    alert('Logged in successfully');
+                    connectSocket();
+                }
+            });
+        }
+
+        function logout() {
+            fetch('/logout').then(response => {
+                if (response.ok) {
+                    alert('Logged out successfully');
+                    if (socket) socket.disconnect();
+                    document.getElementById('auth').style.display = 'block';
+                    document.getElementById('chat').style.display = 'none';
+                }
+            });
+        }
+
+        function getCookie(name) {
+            console.log(document.cookie)
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+        }
+
+        function connectSocket() {
+            const token = getCookie('token');
+            console.log(token)
+            socket = io({
+                auth: {
+                    token: token
+                }
+            });
+
+            socket.on('connect', () => {
+                document.getElementById('auth').style.display = 'none';
+                document.getElementById('chat').style.display = 'block';
+                document.getElementById('loggedUser').textContent = document.getElementById('username').value;
+            });
+
+            socket.on('connect_error', (err) => {
+                console.log(err.message);
+            });
+        }
+    </script>
+</body>
+
+</html>

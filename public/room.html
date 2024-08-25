@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Room</title>
+    <style>
+        #gameCanvas {
+            border: 1px solid black;
+            width: 800px;
+            height: 600px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Game Room</h1>
+    <canvas id="gameCanvas"></canvas>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const thisRoomId = window.location.pathname.split('/').pop();
+
+        let playerId = localStorage.getItem('playerId');
+        let nickname = localStorage.getItem('nickname');
+
+        if (!playerId || !nickname) {
+            window.location.href = `/`;
+        }
+
+        socket.emit('confirmPlayer', playerId);
+
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let thisPlayer = { x: 20, y: 20, color: 'blue', id: playerId };
+        let otherPlayer = { x: 20, y: 20, color: 'red' };
+
+        function drawPlayer() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = thisPlayer.color;
+            ctx.fillRect(thisPlayer.x, thisPlayer.y, 10, 10);
+
+            ctx.fillStyle = otherPlayer.color;
+            ctx.fillRect(otherPlayer.x, otherPlayer.y, 10, 10);
+        }
+
+        function start() {
+            drawPlayer();
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowUp') thisPlayer.y -= 10;
+                if (e.key === 'ArrowDown') thisPlayer.y += 10;
+                if (e.key === 'ArrowLeft') thisPlayer.x -= 10;
+                if (e.key === 'ArrowRight') thisPlayer.x += 10;
+                drawPlayer();
+                socket.emit('movePlayer', { room: thisRoomId, player: thisPlayer });
+            });
+
+        }
+
+        socket.on('playerMoved', ({ player, roomId }) => {
+            if (roomId == thisRoomId && player.id != playerId) {
+                otherPlayer.x = player.x
+                otherPlayer.y = player.y
+                drawPlayer()
+            }
+        })
+
+        socket.on('playerConfirmation', (player) => {
+            console.log("player")
+            console.log(player)
+            if (player.room == thisRoomId) {
+                start()
+            }
+        })
+
+    </script>
+</body>
+
+</html>
