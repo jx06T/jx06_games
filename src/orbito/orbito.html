@@ -12,6 +12,7 @@
     rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.js"></script>
   <link rel="stylesheet" href="../tailwind_built.css">
+  <link rel="stylesheet" href="orbito.css">
   <link rel="stylesheet" href="../home.css">
 </head>
 
@@ -29,6 +30,10 @@
     <main class=" m-2 min-h-screen ">
       <div id="chat" class=" text-white mt-16">
         <p>登入狀態／身分： <span id="loggedUser"></span></p>
+      </div>
+      <h1>等待中玩家：</h1>
+      <div id="people">
+        <div class="person">請先登入</div>
       </div>
      
     </main>

@@ -1,4 +1,5 @@
 let socket;
+let MyUsername;
 
 // 頁面加載時檢查認證狀態
 window.addEventListener('DOMContentLoaded', () => {
@@ -27,7 +28,7 @@ function checkAuth() {
 
 function showLoggedInState(username) {
     document.getElementById('loggedUser').textContent = username || "未登入";
-
+    MyUsername = username
     if (username) {
         document.getElementById('logout').style.display = 'block';
         document.getElementById('login').style.display = 'none';
@@ -49,10 +50,27 @@ function logout() {
 
 function connectSocket() {
     socket = io('/orbito');
-    // socket = io();
     console.log(socket)
+
+    socket.emit('getPeople');
+
     socket.on('connect', () => {
         console.log('Connected to server');
+    });
+
+    socket.on('updatePeople', (people) => {
+        console.log(people,MyUsername)
+        const div = document.createElement("div")
+        for (let i = 0; i < people.length; i++) {
+            const aPerson = people[i].name == MyUsername ? people[i].name + "（you）" : people[i].name
+            const aPersonDiv = document.createElement("div")
+            aPersonDiv.textContent = aPerson
+            aPersonDiv.className = "person"
+            div.appendChild(aPersonDiv)
+        }
+        const peopleContainer = document.getElementById("people");
+        peopleContainer.replaceChildren(...div.children);
+
     });
 
     socket.on('connect_error', (err) => {

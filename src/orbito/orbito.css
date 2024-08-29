@@ -1,0 +1,15 @@
+.person{
+    position: relative;
+    padding-left: 20px;
+}
+.person::before{
+    margin-left: 5px;
+    content: "";
+    position: absolute;
+    width: 10px;
+    top: 7px;
+    left: 0;
+    height: 10px;
+    background-color: #7dd3fc;
+    border-radius: 100px;
+}

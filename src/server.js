@@ -142,28 +142,6 @@ app.get('/check-auth', (req, res) => {
   });
 });
 
-// io.use((socket, next) => {
-//   const token = socket.handshake.headers.cookie?.split(';').find(c => c.trim().startsWith('token='))?.split('=')[1];
-//   if (token) {
-//     jwt.verify(token, JWT_SECRET, (err, decoded) => {
-//       if (err) return next(new Error('Authentication error'));
-//       socket.decoded = decoded;
-//       next();
-//     });
-//   } else {
-//     console.error('No token found in cookie');
-//     next(new Error('Authentication error'));
-//   }
-// });
-
-// io.on('connection', (socket) => {
-//   console.log('User connected:', socket.decoded.username);
-
-//   socket.on('disconnect', () => {
-//     console.log('User disconnected:', socket.decoded.username);
-//   });
-// });
-
 orbitoHandler(io);
 
 app.get('/start', (req, res) => {
