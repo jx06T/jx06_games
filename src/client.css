@@ -1,12 +1,3 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-body{
-    background-color: black;
-    height: 100vh;
-}
-
 .title1{
     background: linear-gradient(to bottom right,#ff2549,#0077ff) ;
     font-size: 3rem;
@@ -27,6 +18,13 @@ body{
     width: 100%;
     height: 100%;
     color: #FFFFFF;
+}
+
+input:-internal-autofill-previewed,
+input:-internal-autofill-selected {
+    color: #FFFFFF;
+    -webkit-text-fill-color: #ffffff;
+    transition: background-color 5000s ease-out 0.5s;
 }
 
 .div1{

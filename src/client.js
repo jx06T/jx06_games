@@ -12,7 +12,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('guest').addEventListener('click', guest)
     document.getElementById('register').addEventListener('click', register)
-    document.getElementById('login').addEventListener('click', login)
+    document.getElementById('login').addEventListener('click', handleLogin)
 
     checkAuth()
 })
@@ -33,17 +33,12 @@ function checkAuth() {
         .then(response => response.json())
         .then(data => {
             if (data.authenticated) {
-                showLoggedInState(data.username);
+                console.log(data.authenticated)
+                window.location.assign('/');
             }
         });
 }
 
-function showLoggedInState(username) {
-    //   document.getElementById('auth').style.display = 'none';
-    document.getElementById('chat').style.display = 'block';
-    document.getElementById('loggedUser').textContent = username;
-    connectSocket();
-}
 
 function guest() {
     const username = "guest-" + getRandId();
@@ -54,7 +49,10 @@ function guest() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
     }).then(response => {
-        if (response.ok) alert('Registered successfully');
+        if (response.ok) {
+            alert('Enter as guest');
+            login(username, "guest")
+        }
     });
 }
 
@@ -62,18 +60,39 @@ function register() {
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
 
+    if (username == "" || password == "") {
+        alert('Please fill in the information');
+        return
+    }
+
     fetch('/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
-    }).then(response => {
-        if (response.ok) alert('Registered successfully');
-    });
+    }).then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Registered successfully');
+                login(username, password)
+            } else {
+                alert('Registered failed: ' + data.message);
+            }
+        });
 }
 
-function login() {
+function handleLogin() {
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
+    login(username, password)
+}
+
+function login(username = null, password = null) {
+
+    if (!username || !password) {
+        alert('Login failed: 缺少資料');
+        return
+    }
+
     fetch('/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -82,32 +101,10 @@ function login() {
         .then(data => {
             if (data.success) {
                 alert('Logged in successfully');
-                showLoggedInState(data.username);
+                window.location.assign('/');
             } else {
                 alert('Login failed: ' + data.message);
             }
         });
 }
 
-function logout() {
-    fetch('/logout').then(response => {
-        if (response.ok) {
-            alert('Logged out successfully');
-            if (socket) socket.disconnect();
-            document.getElementById('auth').style.display = 'block';
-            document.getElementById('chat').style.display = 'none';
-        }
-    });
-}
-
-function connectSocket() {
-    socket = io();
-
-    socket.on('connect', () => {
-        console.log('Connected to server');
-    });
-
-    socket.on('connect_error', (err) => {
-        console.log('Connection error:', err.message);
-    });
-}

@@ -1,0 +1,44 @@
+.title2{
+    background: linear-gradient(to bottom right,#ff2549,#0077ff) ;
+    font-size: 2rem;
+    background-clip:text;
+    color: transparent;
+    font-family: "Noto Serif Display", serif;
+    font-optical-sizing: auto;
+    font-style: normal;
+    font-variation-settings:
+      "wdth" 100;
+    font-weight: 900;
+}
+
+.div2{
+  margin-top: 2rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, 256px);
+  gap: 15px;
+  justify-content: center;
+}
+
+.BG-GB{
+  background: linear-gradient(to bottom right,#ff2549,#0077ff) ;
+}
+
+.BG-BG{
+  background: linear-gradient(to bottom right,#0077ff,#ff2549) ;
+}
+
+.left-line{
+  position: relative;
+  padding-left: 8px;
+}
+.left-line::before{
+  position: absolute;
+  content: "";
+  top: 5%;
+  left: 0;
+  width: 4px;
+  height: 90%;
+  border-radius:10px;
+  /* background:linear-gradient(to bottom,#0077ff,#ff2549)  ; */
+  background-color: purple;
+}
