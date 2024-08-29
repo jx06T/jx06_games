@@ -5,6 +5,7 @@ const cookieParser = require('cookie-parser');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const sqlite3 = require('sqlite3').verbose();
+const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
@@ -12,6 +13,8 @@ const io = socketIo(server);
 
 app.use(express.json());
 app.use(cookieParser());
+
+app.use(express.static(__dirname));
 
 // 創建 SQLite 數據庫連接
 const db = new sqlite3.Database('./users.db', (err) => {
@@ -28,7 +31,28 @@ const db = new sqlite3.Database('./users.db', (err) => {
 });
 
 // JWT 密鑰
-const JWT_SECRET = 'your_jwt_secret';
+// const JWT_SECRET = 'your_jwt_secret';
+const JWT_SECRET = 'SoBoringToday';
+
+app.post('/guest', async (req, res) => {
+  const { username, password } = req.body;
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    db.run('INSERT INTO users (username, password) VALUES (?, ?)', [username, hashedPassword], (err) => {
+      if (err) {
+        if (err.message.includes('UNIQUE constraint failed')) {
+          res.status(400).json({ success: false, message: 'Username already exists' });
+        } else {
+          res.status(500).json({ success: false, message: 'Error registering user' });
+        }
+      } else {
+        res.status(201).json({ success: true, message: 'User registered' });
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error registering user' });
+  }
+});
 
 app.post('/register', async (req, res) => {
   const { username, password } = req.body;
@@ -80,7 +104,7 @@ app.get('/check-auth', (req, res) => {
   if (!token) {
     return res.json({ authenticated: false });
   }
-  
+
   jwt.verify(token, JWT_SECRET, (err, decoded) => {
     if (err) {
       return res.json({ authenticated: false });
@@ -104,18 +128,18 @@ io.use((socket, next) => {
 
 io.on('connection', (socket) => {
   console.log('User connected:', socket.decoded.username);
-  
+
   socket.on('disconnect', () => {
     console.log('User disconnected:', socket.decoded.username);
   });
 });
 
 app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/client.html');
+  res.sendFile(path.join(__dirname, 'client.html'));
 });
 
-server.listen(3002, () => {
-  console.log('Server running on http://localhost:3002');
+server.listen(5545, "127.0.0.1", () => {
+  console.log('Server running on http://localhost:5545');
 });
 
 // 優雅地關閉數據庫連接
