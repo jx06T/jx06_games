@@ -152,11 +152,16 @@ app.get('/orbito', (req, res) => {
   res.sendFile(path.join(__dirname, 'orbito/orbito.html'));
 });
 
+app.get('/orbito/:roomCode', (req, res) => {
+  // 這裡我們仍然發送相同的 HTML 文件，但在客戶端我們會根據 URL 參數來處理不同的房間
+  res.sendFile(path.join(__dirname, 'orbito/orbito.html'));
+});
+
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'home.html'));
 });
 
-server.listen(5545, "127.0.0.1", () => {
+server.listen(5545, () => {
   console.log('Server running on http://localhost:5545');
 });
 

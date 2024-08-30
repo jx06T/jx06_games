@@ -1,5 +1,13 @@
+.root{
+  background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.1)),
+  url("./andremoura-4021521.jpg");
+  background-repeat:repeat-y; 
+  background-size: 100% auto;
+  background-position: center;
+}
+
 .title2{
-    background: linear-gradient(to bottom right,#ff2549,#0077ff) ;
+    background: linear-gradient(to bottom right,#ff2549,#248aff) ;
     font-size: 2rem;
     background-clip:text;
     color: transparent;
@@ -19,12 +27,21 @@
   justify-content: center;
 }
 
+.a-game{
+
+}
+
+.glass{
+  background-color: rgba(130, 200, 200, 0.4);
+  backdrop-filter: blur(4px);
+}
+
 .BG-GB{
-  background: linear-gradient(to bottom right,#ff2549,#0077ff) ;
+  background: linear-gradient(to bottom right,#ff2549,#248aff) ;
 }
 
 .BG-BG{
-  background: linear-gradient(to bottom right,#0077ff,#ff2549) ;
+  background: linear-gradient(to bottom right,#248aff,#ff2549) ;
 }
 
 .left-line{

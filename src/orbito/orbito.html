@@ -18,24 +18,43 @@
 
 <body>
   <div class="root">
-    <header class=" pl-3 w-full h-14 top-0 left-0 fixed bg-slate-100 flex rounded-b-md">
+    <header class=" z-10 pl-3 w-full h-14 top-0 left-0 fixed bg-black bg-opacity-85 flex rounded-b-md">
       <a href="/" class=" title2 ">jx06 Games</a>
-      <a href="/start"
-        class="text-white ml-auto pt-4 px-3 rounded-b-md rounded-l-2xl shadow-md BG-BG"
+      <a href="/start" class="text-white ml-auto pt-4 px-3 rounded-b-md rounded-l-2xl shadow-md BG-BG"
         id="login">Login</a>
-      <button
-        class="text-white ml-auto px-3 rounded-b-md rounded-l-2xl shadow-md BG-BG"
-        style="display: none;" id="logout">Logout</button>
+      <button class="text-white ml-auto px-3 rounded-b-md rounded-l-2xl shadow-md BG-BG" style="display: none;"
+        id="logout">Logout</button>
     </header>
     <main class=" m-2 min-h-screen ">
-      <div id="chat" class=" text-white mt-16">
-        <p>登入狀態／身分： <span id="loggedUser"></span></p>
+      <div id="chat" class=" text-white mt-[55px] pt-2">
+        <p class="glass rounded-md px-2">登入狀態／身分： <span id="loggedUser"></span></p>
       </div>
-      <h1>等待中玩家：</h1>
-      <div id="people">
-        <div class="person">請先登入</div>
+
+      <div id="player-list" class=" overflow-x-auto">
+        <h1 class="mt-2">等待中玩家：</h1>
+        <div class="person p-title">
+          <p>暱稱：</p>
+          <p>等級：</p>
+          <p>積分：</p>
+        </div>
+        <div id="people">
+          <div class="person">
+            <p>登入後查看</p>
+            <p>Lv.1</p>
+            <p>500</p>
+          </div>
+        </div>
       </div>
-     
+
+      <div id="roomInfo" class="mt-4 hidden">
+        <h2>當前房間：<span id="currentRoom"></span></h2>
+        <button id="leaveRoom" class="bg-red-500 text-white px-4 py-2 rounded">離開房間</button>
+      </div>
+
+      <div id="roomContent" class="mt-4 hidden">
+        <!-- 這裡可以添加房間特定的內容，如聊天框、遊戲界面等 -->
+      </div>
+
     </main>
     <footer class=" w-full h-20 bg-gradient-to-r from-sky-800 to-red-800 pt-3">
       <div class="container mx-auto text-center">

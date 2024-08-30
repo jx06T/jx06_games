@@ -1,8 +1,17 @@
 .person{
     position: relative;
     padding-left: 20px;
+    display: grid;
+    grid-template-columns: 180px 90px max-content;
+    height: 2rem;
 }
-.person::before{
+
+.person ~ p{
+    text-align: left;
+    word-wrap:nowrap;
+}
+
+.person:not(.p-title)::before{
     margin-left: 5px;
     content: "";
     position: absolute;
@@ -13,3 +22,16 @@
     background-color: #7dd3fc;
     border-radius: 100px;
 }
+
+.busy.person:not(.p-title)::before{
+    margin-left: 5px;
+    content: "";
+    position: absolute;
+    width: 10px;
+    top: 7px;
+    left: 0;
+    height: 10px;
+    background-color: #eba000;
+    border-radius: 100px;
+}
+
