@@ -76,18 +76,19 @@ module.exports = function (io) {
             }
         });
 
-        socket.on('acceptPair', roomId => {
+        socket.on('acceptPair', (roomId, sourceName) => {
+            console.log(sourceName)
             const playerName = socket.decoded.username
 
             rooms[roomId] = { ...newRoom, id: roomId }
 
-            const target = people[playerName].socketId;
+            const target = people[sourceName].socketId;
             orbitoIo.to(target).emit('pairAccepted', roomId);
         });
 
-        socket.on('rejectPair', () => {
+        socket.on('rejectPair', (sourceName) => {
             const playerName = socket.decoded.username
-            const target = people[playerName].socketId;
+            const target = people[sourceName].socketId;
             orbitoIo.to(target).emit('pairRejected', playerName);
         });
 
@@ -167,8 +168,8 @@ module.exports = function (io) {
 
             const checkerboard = rooms[roomId].checkerboard;
 
-            console.log(x,y,nx,ny)
-            console.log(checkerboard[y][x] == -1 , checkerboard[ny][nx] != -1 , Math.abs(ny - y) != 1 , Math.abs(nx - x) != 1 , (Math.abs(ny - y) == 1 && Math.abs(nx - x) == 1))
+            console.log(x, y, nx, ny)
+            console.log(checkerboard[y][x] == -1, checkerboard[ny][nx] != -1, Math.abs(ny - y) != 1, Math.abs(nx - x) != 1, (Math.abs(ny - y) == 1 && Math.abs(nx - x) == 1))
 
             if (checkerboard[y][x] == -1 || checkerboard[ny][nx] != -1 || Math.abs(ny - y) > 1 || Math.abs(nx - x) > 1 || (Math.abs(ny - y) == 1 && Math.abs(nx - x) == 1)) {
                 console.log("蝦")

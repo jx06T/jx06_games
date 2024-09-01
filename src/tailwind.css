@@ -7,3 +7,7 @@ body{
     color: white;
     height: 100vh;
 }
+
+.shadow-RB{
+    box-shadow:5px 5px 20px #0077ff, -5px 5px 20px #ff2549;
+}

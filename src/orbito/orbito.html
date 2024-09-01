@@ -34,19 +34,19 @@
 
     <main class=" m-2 min-h-screen ">
       <div id="chat" class=" text-white mt-[55px] pt-2">
-        <p class="glass rounded-md px-2">登入狀態／身分： <span id="loggedUser"></span></p>
+        <p class="glass rounded-md px-2">Login status／username：  <span id="loggedUser"></span></p>
       </div>
 
       <div id="player-list" class=" overflow-x-auto">
-        <h1 class="mt-2">等待中玩家：</h1>
+        <h1 class="mt-2">Waiting players:</h1>
         <div class="person p-title mt-1">
-          <p>暱稱：</p>
-          <p>等級：</p>
-          <p>積分：</p>
+          <p>username：</p>
+          <p>grade：</p>
+          <p>integral：</p>
         </div>
         <div id="people">
           <div class="person">
-            <p>登入後查看</p>
+            <p>Log in to view</p>
             <p>Lv.1</p>
             <p>500</p>
           </div>
@@ -54,22 +54,22 @@
       </div>
 
       <div id="roomInfo" class="mt-4 hidden">
-        <h2>當前房間：<span id="current-room"></span></h2>
-        <h2>對戰玩家：<span id="against-players"></span></h2>
-        <button id="leaveRoom" class="bg-red-500 text-white px-4 py-2 rounded">離開房間</button>
+        <h2>Room code：<span id="current-room"></span></h2>
+        <h2>Matchup：<span id="against-players"></span></h2>
+        <button id="leaveRoom" class="bg-red-500 text-white px-4 py-2 rounded mt-1">Leave this room</button>
 
         <div id="players-in-room" class=" absolute top-14 p-3 z-10">
           <button id="close" class="BG-GB px-2 rounded-md">&#60;</button>
-          <h1 class="hiii mt-2 mb-2">房間內玩家:</h1>
+          <h1 class="hiii mt-2 mb-2">Players in the room：</h1>
           <div class="hiii overflow-x-auto">
             <div class="person p-title mt-1 ">
-              <p>暱稱：</p>
-              <p>等級：</p>
-              <p>積分：</p>
+              <p>username：</p>
+              <p>grade：</p>
+              <p>integral：</p>
             </div>
             <div id="people-in-room">
               <div class="person">
-                <p>登入後查看</p>
+                <p>Log in to view</p>
                 <p>Lv.1</p>
                 <p>500</p>
               </div>
@@ -102,6 +102,7 @@
 
   </div>
 
+  <script src="../popWindows.js"></script>
   <script src="orbito.js"></script>
   <script src="orbitoGame.js"></script>
 </body>

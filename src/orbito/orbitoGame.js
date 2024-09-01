@@ -214,7 +214,7 @@ class GameScene extends Phaser.Scene {
                 this.putPiece(finalX, finalY, gameObject)
             }
         });
-        this.scene.launch('DebugScene')
+        // this.scene.launch('DebugScene')
     }
 
     movePiece_animation(gameObject, x, y) {

@@ -61,7 +61,8 @@ function guest() {
         body: JSON.stringify({ username, password })
     }).then(response => {
         if (response.ok) {
-            alert('Enter as guest');
+            createSimpleModal('Log in as guest', "Your information will not be saved")
+            // alert('Enter as guest');
             login(username, "guest")
         }
     });
@@ -72,7 +73,8 @@ function register() {
     const password = document.getElementById('password').value;
 
     if (username == "" || password == "") {
-        alert('Please fill in the information');
+        createSimpleModal('Please fill in the information to register', "")
+        // alert('Please fill in the information');
         return
     }
 
@@ -83,10 +85,15 @@ function register() {
     }).then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert('Registered successfully');
-                login(username, password)
+                createSimpleModal('Registered successfully', `username：${username}`)
+                // alert('Registered successfully');
+                setTimeout(() => {
+                    login(username, password)
+                }, 3000);
+                
             } else {
-                alert('Registered failed: ' + data.message);
+                createSimpleModal('Registered failed: ', data.message)
+                // alert('Registered failed: ' + data.message);
             }
         });
 }
@@ -94,6 +101,7 @@ function register() {
 function handleLogin() {
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
+    createSimpleModal('Logging in', '')
     login(username, password)
 }
 
@@ -101,7 +109,8 @@ function login(username = null, password = null) {
     const returnUrl = new URLSearchParams(window.location.search).get('returnUrl') || window.location.pathname;
 
     if (!username || !password) {
-        alert('Login failed: 缺少資料');
+        createSimpleModal('Login failed:', 'Unfilled information')
+        // alert('Login failed: 缺少資料');
         return
     }
 
@@ -112,11 +121,18 @@ function login(username = null, password = null) {
     }).then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert('Logged in successfully', returnUrl);
+                // alert('Logged in successfully', returnUrl);
                 // window.location.assign('/');
-                window.location.assign(returnUrl);
+                setTimeout(() => {
+                    createSimpleModal('Logged in successfully', `"${username}" has been logged into this computer `)
+                }, 500);
+
+                setTimeout(() => {
+                    window.location.assign(returnUrl);
+                }, 2500);
             } else {
-                alert('Login failed: ' + data.message);
+                createSimpleModal('Login failed:', data.message)
+                // alert('Login failed: ' + data.message);
             }
         });
 }

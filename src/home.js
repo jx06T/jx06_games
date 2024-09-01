@@ -4,6 +4,12 @@ let socket;
 window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('logout').addEventListener('click', logout)
     checkAuth()
+
+    // createSimpleModal('这是一个简单的弹窗','这是一个简单的弹窗cwnknvhwvngcm3nvuvgr');
+    // createConfirmModal('你确定要继续吗？',"",
+    //     () => alert('确认执行'),
+    //     () => alert('取消执行')
+    // );
 })
 
 function getRandId(length = 8) {
@@ -26,7 +32,7 @@ function checkAuth() {
 }
 
 function showLoggedInState(username) {
-    document.getElementById('loggedUser').textContent = username || "未登入";
+    document.getElementById('loggedUser').textContent = username || "Not Logged In";
     if (username) {
         document.getElementById('logout').style.display = 'block';
         document.getElementById('login').style.display = 'none';
@@ -37,23 +43,13 @@ function showLoggedInState(username) {
 function logout() {
     fetch('/logout').then(response => {
         if (response.ok) {
-            alert('Logged out successfully');
+            // alert('Logged out successfully');
+            createSimpleModal('Logged out successfully',`"${document.getElementById('loggedUser').textContent}" has been logged out from this computer `)
             if (socket) socket.disconnect();
-            document.getElementById('loggedUser').textContent = "未登入";
+            document.getElementById('loggedUser').textContent = "Not Logged In";
             document.getElementById('logout').style.display = 'none';
             document.getElementById('login').style.display = 'block';
         }
     });
 }
 
-// function connectSocket() {
-//     socket = io();
-
-//     socket.on('connect', () => {
-//         console.log('Connected to server');
-//     });
-
-//     socket.on('connect_error', (err) => {
-//         console.log('Connection error:', err.message);
-//     });
-// }

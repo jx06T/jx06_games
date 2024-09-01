@@ -40,7 +40,7 @@ function checkAuth() {
 }
 
 function showLoggedInState(username) {
-    document.getElementById('loggedUser').textContent = username || "未登入";
+    document.getElementById('loggedUser').textContent = username || "Not Logged In";
     MyUsername = username
     if (username) {
         document.getElementById('logout').style.display = 'block';
@@ -71,7 +71,7 @@ function connectSocket() {
         MyPlayers = people
         const div = document.createElement("div");
         Object.keys(people).forEach(username => {
-            const aPerson = username == MyUsername ? username + "(你)" : username;
+            const aPerson = username == MyUsername ? username + " (You)" : username;
             const state = people[username].state
 
             const aPersonDiv = document.createElement("div");
@@ -121,7 +121,7 @@ function connectSocket() {
 
         // console.log(rooms[currentRoom], MyPlayers)
         Object.keys(MyPlayers).forEach(username => {
-            const aPerson = username == MyUsername ? username + "(你)" : username;
+            const aPerson = username == MyUsername ? username + " (You)" : username;
 
             if (!rooms[currentRoom].people.includes(username)) {
                 return
@@ -169,7 +169,7 @@ function connectSocket() {
 
         console.log(Mystate, p1, p2)
         document.getElementById('current-room').textContent = `${currentRoom}`;
-        document.getElementById('against-players').textContent = `${rooms[currentRoom].people.includes(p1) ? p1 : p1 + '(玩家離線)'} vs. ${rooms[currentRoom].people.includes(p2) ? p2 : p2 + "(玩家離線)"}`;
+        document.getElementById('against-players').textContent = `${rooms[currentRoom].people.includes(p1) ? p1 : p1 + '(Offline)'} vs. ${rooms[currentRoom].people.includes(p2) ? p2 : p2 + "(Offline)"}`;
     });
 
     socket.on('leftRoom', () => {
@@ -179,13 +179,15 @@ function connectSocket() {
     });
 
     socket.on('pairRequest', (sourceName) => {
-        if (confirm(`Accept ${sourceName}'s pair request?`)) {
+
+        createConfirmModal("pair request confirmation", `Do you want to accept ${sourceName}'s pair request?`, () => {
             const roomId = getRandId(12, false);
-            socket.emit('acceptPair', roomId);
+            socket.emit('acceptPair', roomId, sourceName);
             window.location.href = `/orbito/${roomId}`;
-        } else {
-            socket.emit('rejectPair');
-        }
+        }, () => {
+            socket.emit('rejectPair', sourceName);
+        })
+
     });
 
     socket.on('pairAccepted', (roomId) => {
@@ -193,11 +195,13 @@ function connectSocket() {
     });
 
     socket.on('pairRejected', (sourceName) => {
-        alert(`${sourceName} 拒絕你的邀請`)
+        createSimpleModal('Invitation declined', `"${sourceName}" refuses your invitation`)
+        // alert(`${sourceName} 拒絕你的邀請`)
     });
 
     socket.on('invalidRoom', (roomId) => {
-        alert("invalidRoom")
+        createSimpleModal('invalidRoom', `This room is closed`)
+        // alert("invalidRoom")
         window.location.href = `/orbito`;
     });
 
@@ -206,9 +210,10 @@ function connectSocket() {
 function logout() {
     fetch('/logout').then(response => {
         if (response.ok) {
-            alert('Logged out successfully');
+            // alert('Logged out successfully');
+            createSimpleModal('Logged out successfully', `"${document.getElementById('loggedUser').textContent}" has been logged out from this computer `)
             if (socket) socket.disconnect();
-            document.getElementById('loggedUser').textContent = "未登入";
+            document.getElementById('loggedUser').textContent = "Not Logged In";
             document.getElementById('logout').style.display = 'none';
             document.getElementById('login').style.display = 'block';
         }
@@ -217,15 +222,24 @@ function logout() {
 
 function pair(otherPlayer) {
     if (otherPlayer === MyUsername) {
-        alert("You will create a private room,You can invite friends to join through the link");
-        const roomId = getRandId(12, false)
-        socket.emit('creatRoom', roomId);
-        window.location.href = `/orbito/${roomId}`;
+        // alert("You will create a private room,You can invite friends to join through the link");
+        // createSimpleModal('Create a private room', `You can invite friends to join through the link `)
+        createConfirmModal('Create a private room', `You can invite friends to join through the link `, () => {
+            const roomId = getRandId(12, false)
+            socket.emit('creatRoom', roomId);
+            window.location.href = `/orbito/${roomId}`;
+        }, () => {
+
+        })
         return
 
-    } else if (confirm(`邀請 ${otherPlayer}?`)) {
+    } else {
         console.log("邀請", otherPlayer)
-        socket.emit('requestPair', otherPlayer);
+        createConfirmModal("Invitation confirmation", `Do you want to invite "${otherPlayer}"?`, () => {
+            socket.emit('requestPair', otherPlayer);
+        }, () => {
+
+        })
     }
 }
 
