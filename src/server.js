@@ -8,6 +8,7 @@ const jwt = require('jsonwebtoken');
 const Database = require('better-sqlite3');
 const path = require('path');
 require('dotenv').config();
+// const session = require('express-session');
 
 const app = express();
 const server = http.createServer(app);
@@ -17,6 +18,11 @@ const orbitoHandler = require('./orbito/orbitoHandler');
 app.use(express.json());
 app.use(cookieParser());
 
+// app.use(session({
+//   secret: process.env.SECRET_KEY,
+//   resave: false,
+//   saveUninitialized: true
+// }));
 app.use(express.static(__dirname));
 
 
@@ -56,6 +62,7 @@ app.post('/guest', async (req, res) => {
 
     } catch (error) {
       if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+        console.error('Username already existsE');
         res.status(400).json({ success: false, message: 'Username already exists' });
 
       } else {
@@ -86,6 +93,7 @@ app.post('/register', async (req, res) => {
 
     } catch (error) {
       if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+        console.error('Username already exists');
         res.status(400).json({ success: false, message: 'Username already exists' });
 
       } else {
@@ -101,6 +109,9 @@ app.post('/register', async (req, res) => {
 });
 
 app.post('/login', async (req, res) => {
+  // const returnUrl = req.query.returnUrl || '/';
+  // req.session.returnUrl = returnUrl;
+
   const { username, password } = req.body;
   try {
     const user = GetUserByUserName.get(username);
@@ -123,13 +134,15 @@ app.post('/login', async (req, res) => {
 });
 
 app.get('/logout', (req, res) => {
+  console.log('logout')
   res.clearCookie('token');
   res.json({ success: true, message: 'Logged out' });
 });
 
 app.get('/check-auth', (req, res) => {
   const token = req.cookies.token;
-  console.log(token)
+  console.log("check-auth", token)
+
   if (!token) {
     return res.json({ authenticated: false });
   }
@@ -140,6 +153,7 @@ app.get('/check-auth', (req, res) => {
     }
     res.json({ authenticated: true, username: decoded.username });
   });
+
 });
 
 orbitoHandler(io);
@@ -153,7 +167,6 @@ app.get('/orbito', (req, res) => {
 });
 
 app.get('/orbito/:roomCode', (req, res) => {
-  // 這裡我們仍然發送相同的 HTML 文件，但在客戶端我們會根據 URL 參數來處理不同的房間
   res.sendFile(path.join(__dirname, 'orbito/orbito.html'));
 });
 
@@ -165,7 +178,6 @@ server.listen(5545, () => {
   console.log('Server running on http://localhost:5545');
 });
 
-// 優雅地關閉數據庫連接
 process.on('SIGINT', () => {
   if (db) {
     db.close();

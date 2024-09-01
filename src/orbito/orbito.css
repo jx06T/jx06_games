@@ -35,3 +35,66 @@
     border-radius: 100px;
 }
 
+#players-in-room{
+    right: -355px;
+    background-color: rgba(0, 0, 0, 0.1);
+    box-shadow: -10px 0 20px rgba(255, 255, 255, 0.0);
+    height: 30px;
+    width: min(384px,100%);
+}
+
+#players-in-room > .hiii{
+   display: none;
+}
+
+#players-in-room > #close {
+    width: 18px;
+    margin-left: -6px;
+    padding-left: 2px;
+}
+
+
+#players-in-room.open{
+    right: 0;
+    background-color: rgba(30, 30, 30, 0.97);
+    width: min(384px,100%);
+    height: 100%;
+    box-shadow: -3px 0 20px rgba(255, 255, 255, 0.5);
+}
+
+#players-in-room.open> .hiii{
+    display: block;
+}
+
+#players-in-room.open > #close{
+    margin-left: 0px;
+    width: 60px;
+    padding-left: 8px;
+}
+
+#gameD{
+    width: 80%;
+    /* width: 900px; */
+    margin-left: 10%;
+    height: 90vh;
+    /* overflow: hidden; */
+}
+
+@media screen and (max-width: 700px) {
+    #gameD{
+        width: 90%;
+        margin-left: 5%;
+        max-height: 90vh;
+
+    }
+    
+}
+@media screen and (max-width: 500px) {
+    #gameD{
+        width: 96%;
+        margin-left: 2%;
+        max-height: 90vh;
+
+    }
+    
+}

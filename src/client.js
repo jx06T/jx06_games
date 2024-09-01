@@ -3,12 +3,23 @@ let socket;
 // 頁面加載時檢查認證狀態
 window.addEventListener('DOMContentLoaded', () => {
     const password = document.getElementById('password');
+    const username = document.getElementById('username');
     document.getElementById("eye-close").addEventListener("click", () => {
         password.type = "password"
     });
     document.getElementById("eye-open").addEventListener("click", () => {
         password.type = "text"
     });
+    password.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            handleLogin()
+        }
+    })
+    username.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            password.focus()
+        }
+    })
 
     document.getElementById('guest').addEventListener('click', guest)
     document.getElementById('register').addEventListener('click', register)
@@ -87,6 +98,7 @@ function handleLogin() {
 }
 
 function login(username = null, password = null) {
+    const returnUrl = new URLSearchParams(window.location.search).get('returnUrl') || window.location.pathname;
 
     if (!username || !password) {
         alert('Login failed: 缺少資料');
@@ -100,8 +112,9 @@ function login(username = null, password = null) {
     }).then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert('Logged in successfully');
-                window.location.assign('/');
+                alert('Logged in successfully', returnUrl);
+                // window.location.assign('/');
+                window.location.assign(returnUrl);
             } else {
                 alert('Login failed: ' + data.message);
             }

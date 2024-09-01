@@ -1,9 +1,17 @@
 let socket;
 let MyUsername;
+let MyPlayers = {};
+let Mystate = 0
 let currentRoom = null;
-// 頁面加載時檢查認證狀態
+let MyColor = 0
+
 window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('logout').addEventListener('click', logout)
+    document.getElementById('login').href = `/start?returnUrl=${window.location.pathname}`;
+    document.getElementById('close').addEventListener("click", () => {
+        document.getElementById('players-in-room').classList.toggle('open')
+        document.getElementById('close').textContent = document.getElementById('players-in-room').classList.contains('open') ? "close" : "<"
+    });
     const pathParts = window.location.pathname.split('/');
 
     if (pathParts.length === 3 && pathParts[1] === 'orbito') {
@@ -13,10 +21,8 @@ window.addEventListener('DOMContentLoaded', () => {
     checkAuth();
 })
 
-
-
-function getRandId(length = 8) {
-    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+function getRandId(length = 8, letter = true) {
+    const chars = '0123456789' + (letter ? "abcdefghijklmnopqrstuvwxyz" : "");
     let result = '';
     const charactersLength = chars.length;
     for (let i = 0; i < length; i++) {
@@ -43,18 +49,6 @@ function showLoggedInState(username) {
     }
 }
 
-function logout() {
-    fetch('/logout').then(response => {
-        if (response.ok) {
-            alert('Logged out successfully');
-            if (socket) socket.disconnect();
-            document.getElementById('loggedUser').textContent = "未登入";
-            document.getElementById('logout').style.display = 'none';
-            document.getElementById('login').style.display = 'block';
-        }
-    });
-}
-
 function connectSocket() {
     socket = io('/orbito');
     console.log(socket)
@@ -62,9 +56,9 @@ function connectSocket() {
     socket.emit('getPeople');
 
     socket.on('connect', () => {
-        console.log('Connected to server',currentRoom);
+        console.log('Connected to server', currentRoom);
         if (currentRoom) {
-            socket.emit('joinRoom', MyUsername, currentRoom);
+            socket.emit('joinRoom', currentRoom);
         }
     });
 
@@ -72,13 +66,11 @@ function connectSocket() {
         console.log('Connection error:', err.message);
     });
 
-    socket.on('updatePeople', (people) => {
+    socket.on('peopleUpdated', (people) => {
         console.log(people, MyUsername);
+        MyPlayers = people
         const div = document.createElement("div");
         Object.keys(people).forEach(username => {
-            console.log('Username:', username);
-            console.log('Socket ID:', people[username].socketId);
-
             const aPerson = username == MyUsername ? username + "(你)" : username;
             const state = people[username].state
 
@@ -93,7 +85,7 @@ function connectSocket() {
             nameP.textContent = aPerson;
             nameP.style.cursor = "pointer";
 
-            aPersonDiv.addEventListener("click", () => joinRoom(username));
+            aPersonDiv.addEventListener("click", () => pair(username));
 
             const levelP = document.createElement("p");
             const scoreP = document.createElement("p");
@@ -110,35 +102,89 @@ function connectSocket() {
         peopleContainer.replaceChildren(...div.children);
     });
 
-    socket.on('joinedRoom', (room) => {
-        console.log(room, room.people.join("/"))
-        currentRoom = room.id;
-        document.getElementById('currentRoom').textContent = currentRoom + "/" + room.people.join("/");
+    socket.on('roomJoined', (room) => {
+        // currentRoom = room.id;
+        // document.getElementById('current-room').textContent = currentRoom + "/" + room.people.join("/");
+        gameStarts(room.checkerboard)
         document.getElementById('roomInfo').classList.remove('hidden');
+        document.getElementById('game').classList.remove('hidden');
         document.getElementById('player-list').classList.add('hidden');
     });
 
-    socket.on('updataRoomInfo', (rooms) => {
-        console.log(rooms)
+    socket.on('roomUpdatad', (rooms) => {
+        // console.log(rooms)
         if (!rooms[currentRoom]) {
             return
         }
-        document.getElementById('currentRoom').textContent = currentRoom + "/" + rooms[currentRoom].people.join("/");
+
+        const div = document.createElement("div");
+
+        // console.log(rooms[currentRoom], MyPlayers)
+        Object.keys(MyPlayers).forEach(username => {
+            const aPerson = username == MyUsername ? username + "(你)" : username;
+
+            if (!rooms[currentRoom].people.includes(username)) {
+                return
+            }
+
+            const aPersonDiv = document.createElement("div");
+            aPersonDiv.className = "person";
+
+            if (rooms[currentRoom].players.includes(username)) {
+                aPersonDiv.classList.add("busy");
+            }
+
+            const nameP = document.createElement("p");
+            nameP.textContent = aPerson;
+            nameP.style.cursor = "pointer";
+
+            // aPersonDiv.addEventListener("click", () => pair(username));
+
+            const levelP = document.createElement("p");
+            const scoreP = document.createElement("p");
+            levelP.textContent = "Lv.0";
+            scoreP.textContent = "9999";
+
+            aPersonDiv.appendChild(nameP);
+            aPersonDiv.appendChild(levelP);
+            aPersonDiv.appendChild(scoreP);
+            div.appendChild(aPersonDiv);
+        })
+
+        const peopleContainer = document.getElementById("people-in-room");
+        peopleContainer.replaceChildren(...div.children);
+
+        const p1 = rooms[currentRoom].players[0]
+        const p2 = rooms[currentRoom].players[1]
+
+        if (rooms[currentRoom].people.includes(p1) && rooms[currentRoom].people.includes(p2)) {
+            const color = (p1 == MyUsername) ? 0 : 1
+            if (Mystate == 0 && (rooms[currentRoom].count % 2) != color) {
+                Mystate = rooms[currentRoom].count2 % 3 + 1
+                MyColor = color
+            }
+        } else {
+            Mystate = 0
+        }
+
+        console.log(Mystate, p1, p2)
+        document.getElementById('current-room').textContent = `${currentRoom}`;
+        document.getElementById('against-players').textContent = `${rooms[currentRoom].people.includes(p1) ? p1 : p1 + '(玩家離線)'} vs. ${rooms[currentRoom].people.includes(p2) ? p2 : p2 + "(玩家離線)"}`;
     });
 
     socket.on('leftRoom', () => {
         currentRoom = null;
-        document.getElementById('currentRoom').textContent = '';
+        document.getElementById('current-room').textContent = '';
         document.getElementById('roomInfo').classList.add('hidden');
     });
 
-    socket.on('pairRequest', ({ sourceName }) => {
+    socket.on('pairRequest', (sourceName) => {
         if (confirm(`Accept ${sourceName}'s pair request?`)) {
-            const roomId = getRandId(12);
-            socket.emit('acceptPair', { sourceName, me: MyUsername, roomId });
+            const roomId = getRandId(12, false);
+            socket.emit('acceptPair', roomId);
             window.location.href = `/orbito/${roomId}`;
         } else {
-            socket.emit('rejectPair', { sourceName, me: MyUsername });
+            socket.emit('rejectPair');
         }
     });
 
@@ -157,36 +203,48 @@ function connectSocket() {
 
 }
 
-function joinRoom(otherPlayer) {
+function logout() {
+    fetch('/logout').then(response => {
+        if (response.ok) {
+            alert('Logged out successfully');
+            if (socket) socket.disconnect();
+            document.getElementById('loggedUser').textContent = "未登入";
+            document.getElementById('logout').style.display = 'none';
+            document.getElementById('login').style.display = 'block';
+        }
+    });
+}
+
+function pair(otherPlayer) {
     if (otherPlayer === MyUsername) {
         alert("You will create a private room,You can invite friends to join through the link");
-        const roomId = getRandId(12)
-        socket.emit('creatRoom', MyUsername, roomId);
+        const roomId = getRandId(12, false)
+        socket.emit('creatRoom', roomId);
         window.location.href = `/orbito/${roomId}`;
         return
+
     } else if (confirm(`邀請 ${otherPlayer}?`)) {
-        console.log(otherPlayer)
-        socket.emit('requestPair', MyUsername, otherPlayer);
+        console.log("邀請", otherPlayer)
+        socket.emit('requestPair', otherPlayer);
     }
 }
 
 document.getElementById('leaveRoom').addEventListener('click', () => {
     if (currentRoom) {
-        // socket.emit('leaveRoom', MyUsername, currentRoom);
-        history.pushState({ page: 'orbito' }, "Orbito", '/orbito');
-        window.location.href = '/orbito'; // 重定向回主頁面
+        history.pushState({ page: 'orbito' }, "Orbito", '/orbito');//操作歷史紀錄，讓返回時觸發重新連線
+        window.location.href = '/orbito';
     }
 });
 
-window.addEventListener('load', () => {
-    if (window.location.pathname === '/orbito') {
-        console.log('Page loaded: /orbito');
-        // 执行相关逻辑
+window.addEventListener('scroll', function () {
+    const windowHeight = window.innerHeight;
+    const documentHeight = document.documentElement.scrollHeight;
+    const scrollTop = window.scrollY;
+    const distanceFromBottom = documentHeight - (scrollTop + windowHeight);
+    if (distanceFromBottom < 100) {
+        document.getElementById('header').style.display = 'none'
+    }
+    if (scrollTop < 100) {
+        document.getElementById('header').style.display = 'flex'
     }
 });
-
-// window.addEventListener('beforeunload', () => {
-//     if (currentRoom) {
-//         socket.emit('leaveRoom', MyUsername, currentRoom);
-//     }
-// })
