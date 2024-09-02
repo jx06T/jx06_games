@@ -4,8 +4,26 @@ let MyPlayers = {};
 let Mystate = 0
 let currentRoom = null;
 let MyColor = 0
+let inAction
 
 window.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('exchange').addEventListener('click', () => {
+        if (socket) {
+            createConfirmModal("Confirm exchange of pieces","This will cause the game to restart",()=>{
+                socket.emit('exchange')
+            },()=>{
+
+            })
+        }
+    });
+
+    document.getElementById('leave-room').addEventListener('click', () => {
+        if (currentRoom) {
+            history.pushState({ page: 'orbito' }, "Orbito", '/orbito');//操作歷史紀錄，讓返回時觸發重新連線
+            window.location.href = '/orbito';
+        }
+    });
+
     document.getElementById('logout').addEventListener('click', logout)
     document.getElementById('login').href = `/start?returnUrl=${window.location.pathname}`;
     document.getElementById('close').addEventListener("click", () => {
@@ -51,7 +69,7 @@ function showLoggedInState(username) {
 
 function connectSocket() {
     socket = io('/orbito');
-    console.log(socket)
+    // console.log(socket)
 
     socket.emit('getPeople');
 
@@ -63,14 +81,23 @@ function connectSocket() {
     });
 
     socket.on('connect_error', (err) => {
+        createSimpleModal('Connection error:', err.message)
         console.log('Connection error:', err.message);
     });
 
     socket.on('peopleUpdated', (people) => {
-        console.log(people, MyUsername);
+        // console.log(people, MyUsername);
         MyPlayers = people
         const div = document.createElement("div");
-        Object.keys(people).forEach(username => {
+
+        const sortedPlayers = Object.keys(people).sort((a, b) => {
+            const Va = people[a].name == MyUsername ? -10 : (people[a].state || 0)
+            const Vb = people[b].name == MyUsername ? -10 : (people[b].state || 0)
+            return Va - Vb;
+        })
+
+        sortedPlayers.forEach(username => {
+            // Object.keys(people).forEach(username => {
             const aPerson = username == MyUsername ? username + " (You)" : username;
             const state = people[username].state
 
@@ -85,7 +112,7 @@ function connectSocket() {
             nameP.textContent = aPerson;
             nameP.style.cursor = "pointer";
 
-            aPersonDiv.addEventListener("click", () => pair(username));
+            nameP.addEventListener("click", () => pair(username));
 
             const levelP = document.createElement("p");
             const scoreP = document.createElement("p");
@@ -119,8 +146,13 @@ function connectSocket() {
 
         const div = document.createElement("div");
 
-        // console.log(rooms[currentRoom], MyPlayers)
-        Object.keys(MyPlayers).forEach(username => {
+        const sortedPlayers = Object.keys(MyPlayers).sort((a, b) => {
+            const Va = (a == MyUsername ? 2 : 1) * (rooms[currentRoom].players.includes(a) ? 0 : 4)
+            const Vb = (b == MyUsername ? 2 : 1) * (rooms[currentRoom].players.includes(b) ? 0 : 4)
+            return Va - Vb;
+        });
+
+        sortedPlayers.forEach(username => {
             const aPerson = username == MyUsername ? username + " (You)" : username;
 
             if (!rooms[currentRoom].people.includes(username)) {
@@ -157,17 +189,25 @@ function connectSocket() {
         const p1 = rooms[currentRoom].players[0]
         const p2 = rooms[currentRoom].players[1]
 
-        if (rooms[currentRoom].people.includes(p1) && rooms[currentRoom].people.includes(p2)) {
+        if ((MyUsername == p1 || MyUsername == p2)) {
             const color = (p1 == MyUsername) ? 0 : 1
-            if (Mystate == 0 && (rooms[currentRoom].count % 2) != color) {
+            MyColor = color
+            if ((rooms[currentRoom].count % 2) != color && rooms[currentRoom].people.includes(p1) && rooms[currentRoom].people.includes(p2)) {
                 Mystate = rooms[currentRoom].count2 % 3 + 1
-                MyColor = color
+            } else {
+                Mystate = 0
             }
+            document.getElementById('exchange').disabled = false;
+            document.getElementById('exchange').classList.remove("disabled-j");
         } else {
-            Mystate = 0
+            Mystate = -1
+            MyColor = -1
+            document.getElementById('exchange').disabled = true;
+            document.getElementById('exchange').classList.add("disabled-j");
         }
+        inAction = (rooms[currentRoom].count + 1) % 2
 
-        console.log(Mystate, p1, p2)
+        // console.log(p1,MyColor,Mystate, p1, p2, inAction)
         document.getElementById('current-room').textContent = `${currentRoom}`;
         document.getElementById('against-players').textContent = `${rooms[currentRoom].people.includes(p1) ? p1 : p1 + '(Offline)'} vs. ${rooms[currentRoom].people.includes(p2) ? p2 : p2 + "(Offline)"}`;
     });
@@ -205,6 +245,10 @@ function connectSocket() {
         window.location.href = `/orbito`;
     });
 
+    socket.on('actIllegal', (e) => {
+        createConfirmModal('Illegal request', `${e.errorType}：\n${JSON.stringify(e).replaceAll(",", ",\n")}\nAre you cheating?\nIf you think this is a bug please contact "50313tjx06@gmail.com"`, () => { location.reload() }, () => { location.reload() }, "I won't cheat again.", "I'm not cheating!")
+    });
+
 }
 
 function logout() {
@@ -234,7 +278,7 @@ function pair(otherPlayer) {
         return
 
     } else {
-        console.log("邀請", otherPlayer)
+        // console.log("邀請", otherPlayer)
         createConfirmModal("Invitation confirmation", `Do you want to invite "${otherPlayer}"?`, () => {
             socket.emit('requestPair', otherPlayer);
         }, () => {
@@ -242,13 +286,6 @@ function pair(otherPlayer) {
         })
     }
 }
-
-document.getElementById('leaveRoom').addEventListener('click', () => {
-    if (currentRoom) {
-        history.pushState({ page: 'orbito' }, "Orbito", '/orbito');//操作歷史紀錄，讓返回時觸發重新連線
-        window.location.href = '/orbito';
-    }
-});
 
 window.addEventListener('scroll', function () {
     const windowHeight = window.innerHeight;

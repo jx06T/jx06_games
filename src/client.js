@@ -77,6 +77,10 @@ function register() {
         // alert('Please fill in the information');
         return
     }
+    if (username.length < 3 || username.length > 21) {
+        createSimpleModal('Username length should be between 3~21 characters', "")
+        return 
+    }
 
     fetch('/register', {
         method: 'POST',
@@ -90,7 +94,7 @@ function register() {
                 setTimeout(() => {
                     login(username, password)
                 }, 3000);
-                
+
             } else {
                 createSimpleModal('Registered failed: ', data.message)
                 // alert('Registered failed: ' + data.message);

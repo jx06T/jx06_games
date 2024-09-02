@@ -51,6 +51,25 @@ class LoadScene extends Phaser.Scene {
     }
 }
 
+function arraysEqual(arr1, arr2) {
+    if (!Array.isArray(arr1) || !Array.isArray(arr2) || arr1.length !== arr2.length) {
+        return false;
+    }
+
+    for (let i = 0; i < arr1.length; i++) {
+        if (Array.isArray(arr1[i]) && Array.isArray(arr2[i])) {
+            if (!arraysEqual(arr1[i], arr2[i])) {
+                return false;
+            }
+        } else if (arr1[i] !== arr2[i]) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+
 class GameScene extends Phaser.Scene {
     constructor() {
         super({
@@ -58,14 +77,21 @@ class GameScene extends Phaser.Scene {
         });
     }
     init(data) {
-        socket.on('pieceRotated', (newCheckerboard) => {
-            console.log("!")
-            checkerboard = newCheckerboard
+        socket.on('pieceRotated', (newCheckerboard, pCheckerboard) => {
+            if (arraysEqual(checkerboard, newCheckerboard)) {
+                return
+            }
+            // console.log(checkerboard, pCheckerboard, newCheckerboard)
+            // console.log("!")
+            checkerboard = pCheckerboard
             this.rotatePiece()
         })
 
         socket.on('pieceMoved', (newCheckerboard, x, y, nx, ny, color) => {
-            console.log("!???")
+            if (arraysEqual(checkerboard, newCheckerboard)) {
+                return
+            }
+            // console.log("!???")
             this.movePiece_animation(checkerboard_object[y][x], nx, ny)
             checkerboard_object[ny][nx] = checkerboard_object[y][x]
             checkerboard_object[y][x] = null
@@ -73,12 +99,28 @@ class GameScene extends Phaser.Scene {
         })
 
         socket.on('piecePut', (newCheckerboard, x, y, type) => {
-            console.log("DD")
+            if (arraysEqual(checkerboard, newCheckerboard)) {
+                return
+            }
+            // console.log("DD")
             checkerboard = newCheckerboard
             if (type == MyColor) {
                 return
             }
             this.OtherMovingPieces(type, x, y)
+        })
+
+        socket.on('gameOver', (check) => {
+            this.scene.launch("GameOver", { winner: check })
+            // alert(check)
+        })
+
+        socket.on('reset', (check) => {
+            checkerboard = [[-1, -1, -1, -1], [-1, -1, -1, -1], [-1, -1, -1, -1], [-1, -1, -1, -1]]
+            checkerboard_object = [[], [], [], []]
+            this.scene.stop('GameOver');
+            this.scene.restart()
+            // alert(check)
         })
     }
 
@@ -111,7 +153,8 @@ class GameScene extends Phaser.Scene {
             if (Mystate != 1) {
                 return
             }
-            this.check.setScale(1.05)
+            this.check.setScale(1.1)
+            this.check.setTint(0xfe5f50)
         })
 
         this.check.on("pointerout", () => {
@@ -119,6 +162,8 @@ class GameScene extends Phaser.Scene {
                 return
             }
             this.check.setScale(1)
+            this.check.setTint()
+
         })
 
         this.check.on("pointerup", () => {
@@ -127,7 +172,9 @@ class GameScene extends Phaser.Scene {
             }
             Mystate += 1
             socket.emit('skipMovePiece');
-            console.log("ch")
+            this.check.setScale(1)
+            this.check.setTint()
+            // console.log("ch")
         })
 
         this.add.image(600, 450, 'chessboard').setOrigin(0.5).setScale(1.1);
@@ -138,6 +185,7 @@ class GameScene extends Phaser.Scene {
                 return
             }
             this.button.setScale(1.5)
+            this.button.setTint(0xfee082)
         })
 
         this.button.on("pointerout", () => {
@@ -145,16 +193,19 @@ class GameScene extends Phaser.Scene {
                 return
             }
             this.button.setScale(1.3)
+            this.button.setTint()
         })
 
         this.button.on("pointerup", () => {
             if (Mystate != 3) {
                 return
             }
-            console.log("rr")
+            this.rotatePiece()
+            // console.log("rr")
             socket.emit('rotatePiece');
             Mystate = 0
-            this.rotatePiece()
+            this.button.setScale(1.3)
+            this.button.setTint()
         })
 
 
@@ -178,6 +229,29 @@ class GameScene extends Phaser.Scene {
         this.InitializeChessboard()
 
         // Drag and drop functionality
+
+        this.input.on('pointerover', (pointer, justOver) => {
+            justOver.forEach(gameObject => {
+                if (!this.canMoved(gameObject)) {
+                    return
+                }
+                if (gameObject.getData('color') == 0 || gameObject.getData('color') == 1) {
+                    gameObject.setScale(1.15);
+                }
+            });
+        });
+
+        this.input.on('pointerout', (pointer, justOver) => {
+            justOver.forEach(gameObject => {
+                if (!this.canMoved(gameObject)) {
+                    return
+                }
+                if (gameObject.getData('color') == 0 || gameObject.getData('color') == 1) {
+                    gameObject.setScale(1.1);
+                }
+            });
+        });
+
         this.input.on('dragstart', (pointer, gameObject) => {
             if (!this.canMoved(gameObject)) {
                 return
@@ -215,6 +289,7 @@ class GameScene extends Phaser.Scene {
             }
         });
         // this.scene.launch('DebugScene')
+        // this.scene.launch("GameOver", { winner: "W" })
     }
 
     movePiece_animation(gameObject, x, y) {
@@ -255,15 +330,18 @@ class GameScene extends Phaser.Scene {
         for (let i = 0; i < 4; i++) {
             for (let j = 0; j < 4; j++) {
                 if (checkerboard[i][j] != -1) {
-                    console.log(checkerboard[i][j])
+                    // console.log(checkerboard[i][j])
                     this.OtherMovingPieces(checkerboard[i][j], j, i)
                 }
             }
         }
+        if (checkGameOver(checkerboard) != "N") {
+            this.scene.launch("GameOver", { winner: checkGameOver(checkerboard) })
+        }
     }
 
     canMoved(gameObject) {
-        if (Mystate == 0) {
+        if (Mystate == 0 || Mystate == -1) {
             return false
         }
         if (Mystate == 1 && (gameObject.getData('color') == MyColor || gameObject.getData('state') != 1)) {
@@ -297,7 +375,7 @@ class GameScene extends Phaser.Scene {
                     gameObject.setData('ox', j)
                     gameObject.setData('oy', i)
 
-                    console.log(checkerboard, "99", Mystate)
+                    // console.log(checkerboard, "99", Mystate)
                     Mystate += 1
                     socket.emit('putPiece', j, i);
                     return
@@ -344,7 +422,7 @@ class GameScene extends Phaser.Scene {
                     checkerboard_object[i][j] = gameObject
 
                     gameObject.setData('state', 1)
-                    console.log(checkerboard, checkerboard_object, "909", Mystate)
+                    // console.log(checkerboard, checkerboard_object, "909", Mystate)
                     Mystate += 1
                     socket.emit('movePiece', ox, oy, j, i);
                     return
@@ -435,11 +513,16 @@ class GameScene extends Phaser.Scene {
             }
         }
         checkerboard_object = this.rotationMatrix(checkerboard_object)
-        console.log(checkerboard)
+        // console.log(checkerboard)
     }
 
     update(time, delta) {
         switch (Mystate) {
+            case -1:
+                this.hint.setText('you are a spectator')
+                this.identity.setText("active")
+                this.identity.x = inAction == 0 ? 200 : 1000
+                break;
             case 0:
                 this.hint.setText('waiting for opponent')
                 break;
@@ -470,9 +553,11 @@ class GameScene extends Phaser.Scene {
 
             piece.x = startX + (targetX - startX) * progress;
             piece.y = startY + (targetY - startY) * progress;
+            piece.setScale(1.15);
 
             if (progress >= 1) {
                 this.animatingPieces.splice(index, 1);
+                piece.setScale(1.1);
             }
         });
     }
@@ -520,6 +605,59 @@ class DebugScene extends Phaser.Scene {
     }
 }
 
+class GameOverScene extends Phaser.Scene {
+    constructor() {
+        super({
+            key: "GameOver",
+        })
+    }
+    init(data) {
+        this.winner = data.winner == "W" ? "White wins!" : data.winner == "B" ? "Black wins!" : "It's a Tie!"
+    }
+    create() {
+        this.graphics = this.add.graphics()
+        this.graphics.fillStyle(0x000000, 0.5);
+        this.graphics.fillRect(0, 0, 1200, 900);
+
+        this.title = this.add.text(600, 450, this.winner, {
+            font: '72px Pacifico',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+
+        if (MyColor == -1) {
+            return
+        }
+
+        this.again = this.add.text(600, 650, "Play Again", {
+            font: '32px Pacifico',
+            color: '#ffffff'
+        }).setOrigin(0.5).setInteractive();
+
+        this.again.on("pointerover", () => {
+            this.again.setScale(1.1)
+            this.again.setColor("#fe5f50")
+        })
+
+        this.again.on("pointerout", () => {
+            this.again.setScale(1)
+            this.again.setColor("#FFFFFF")
+
+        })
+
+        this.again.on("pointerup", () => {
+            this.again.setScale(1)
+            this.again.setColor("#FFFFFF")
+            this.scene.stop();
+            socket.emit('again')
+        })
+    }
+
+    update(time, delta) {
+        const angle = -0.5 + Math.sin(time / 150) * 1;
+        this.title.setAngle(angle);
+    }
+}
+
 const config = {
     type: Phaser.AUTO,
     scale: {
@@ -541,7 +679,8 @@ const config = {
     scene: [
         LoadScene,
         GameScene,
-        DebugScene
+        DebugScene,
+        GameOverScene
     ]
 };
 
@@ -549,4 +688,107 @@ function gameStarts(newCheckerboard) {
     checkerboard = newCheckerboard
     console.log("game start", newCheckerboard)
     game = new Phaser.Game(config);
+}
+
+function checkGameOver(board) {
+    let W = 0
+    let B = 0
+
+    // 檢查行
+    for (let i = 0; i < 4; i++) {
+        let blackCount = 0;
+        let whiteCount = 0;
+        for (let j = 0; j < 4; j++) {
+            if (board[i][j] === 0) {
+                blackCount++;
+                whiteCount = 0;
+            } else if (board[i][j] === 1) {
+                whiteCount++;
+                blackCount = 0;
+            } else {
+                blackCount = 0;
+                whiteCount = 0;
+            }
+            if (blackCount === 4) {
+                B++
+            } else if (whiteCount === 4) {
+                W++
+            }
+        }
+    }
+
+    // 檢查列
+    for (let i = 0; i < 4; i++) {
+        let blackCount = 0;
+        let whiteCount = 0;
+        for (let j = 0; j < 4; j++) {
+            if (board[j][i] === 0) {
+                blackCount++;
+                whiteCount = 0;
+            } else if (board[j][i] === 1) {
+                whiteCount++;
+                blackCount = 0;
+            } else {
+                blackCount = 0;
+                whiteCount = 0;
+            }
+            if (blackCount === 4) {
+                B++
+            } else if (whiteCount === 4) {
+                W++
+            }
+        }
+    }
+
+    // 檢查對角線
+    let blackCount = 0;
+    let whiteCount = 0;
+    for (let i = 0; i < 4; i++) {
+        if (board[i][i] === 0) {
+            blackCount++;
+            whiteCount = 0;
+        } else if (board[i][i] === 1) {
+            whiteCount++;
+            blackCount = 0;
+        } else {
+            blackCount = 0;
+            whiteCount = 0;
+        }
+        if (blackCount === 4) {
+            B++
+        } else if (whiteCount === 4) {
+            W++
+        }
+    }
+
+    blackCount = 0;
+    whiteCount = 0;
+    for (let i = 0; i < 4; i++) {
+        if (board[i][3 - i] === 0) {
+            blackCount++;
+            whiteCount = 0;
+        } else if (board[i][3 - i] === 1) {
+            whiteCount++;
+            blackCount = 0;
+        } else {
+            blackCount = 0;
+            whiteCount = 0;
+        }
+        if (blackCount === 4) {
+            B++
+        } else if (whiteCount === 4) {
+            W++
+        }
+    }
+
+    if (B == 0 && W == 0) {
+        return "N";
+    } else if (B > 0 && W == 0) {
+        return "B";
+    } else if (B == 0 && W > 0) {
+        return "W";
+    } else if (B > 0 && W > 0) {
+        return "T";
+    }
+
 }

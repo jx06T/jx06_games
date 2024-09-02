@@ -12,11 +12,11 @@
     rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
-  
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
-  
+
   <link rel="stylesheet" href="../tailwind_built.css">
   <link rel="stylesheet" href="orbito.css">
   <link rel="stylesheet" href="../home.css">
@@ -34,7 +34,7 @@
 
     <main class=" m-2 min-h-screen ">
       <div id="chat" class=" text-white mt-[55px] pt-2">
-        <p class="glass rounded-md px-2">Login status／username：  <span id="loggedUser"></span></p>
+        <p class="glass rounded-md px-2">Login status／username： <span id="loggedUser"></span></p>
       </div>
 
       <div id="player-list" class=" overflow-x-auto">
@@ -56,7 +56,7 @@
       <div id="roomInfo" class="mt-4 hidden">
         <h2>Room code：<span id="current-room"></span></h2>
         <h2>Matchup：<span id="against-players"></span></h2>
-        <button id="leaveRoom" class="bg-red-500 text-white px-4 py-2 rounded mt-1">Leave this room</button>
+        <!-- <button id="leaveRoom" class="bg-red-500 text-white px-4 py-2 rounded mt-1">Leave this room</button> -->
 
         <div id="players-in-room" class=" absolute top-14 p-3 z-10">
           <button id="close" class="BG-GB px-2 rounded-md">&#60;</button>
@@ -74,6 +74,11 @@
                 <p>500</p>
               </div>
             </div>
+          </div>
+          <div id="btns" class="flex flex-col mt-2">
+            <button id="exchange" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded mt-2">exchange chess pieces</button>
+            <!-- <button id="give-up" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded mt-2">Give up</button> -->
+            <button id="leave-room" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded mt-2">Leave this room</button>
           </div>
         </div>
       </div>

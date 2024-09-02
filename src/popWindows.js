@@ -40,7 +40,7 @@ function createSimpleModal(title, content = "") {
     }, 6000);
 }
 
-function createConfirmModal(title, content = "", onConfirm, onCancel) {
+function createConfirmModal(title, content = "", onConfirm, onCancel, confirm = "Confirm", cancel = "Cancel") {
     // Create the container div
     const container = document.createElement('div');
     container.className = 'fixed top-0 right-0 left-0 z-30 flex justify-center w-full bg-transparent';
@@ -66,7 +66,7 @@ function createConfirmModal(title, content = "", onConfirm, onCancel) {
     // Create the confirm button
     const confirmButton = document.createElement('button');
     confirmButton.className = 'cursor-pointer px-2 rounded-md bg-blue-500 hover:bg-blue-600';
-    confirmButton.textContent = 'Confirm';
+    confirmButton.textContent = confirm;
     confirmButton.onclick = () => {
         onConfirm();
         document.body.removeChild(container); // Remove the popup after confirming
@@ -75,7 +75,7 @@ function createConfirmModal(title, content = "", onConfirm, onCancel) {
     // Create the cancel button
     const cancelButton = document.createElement('button');
     cancelButton.className = 'cursor-pointer px-2 rounded-md bg-red-500 hover:bg-red-600';
-    cancelButton.textContent = 'Cancel';
+    cancelButton.textContent = cancel;
     cancelButton.onclick = () => {
         onCancel();
         document.body.removeChild(container); // Remove the popup after canceling

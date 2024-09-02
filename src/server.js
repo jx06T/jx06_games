@@ -14,7 +14,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
-const orbitoHandler = require('./orbito/orbitoHandler');
+const orbitoHandler = require('./orbito/orbitoServer');
 app.use(express.json());
 app.use(cookieParser());
 
@@ -23,6 +23,7 @@ app.use(cookieParser());
 //   resave: false,
 //   saveUninitialized: true
 // }));
+
 app.use(express.static(__dirname));
 
 
@@ -53,6 +54,11 @@ const GetUserByUserName = db.prepare('SELECT * FROM users WHERE username = ?');
 
 app.post('/guest', async (req, res) => {
   const { username, password } = req.body;
+
+  if (username.length < 3 || username.length > 21) {
+    return res.status(400).json({ error: 'Username must be between 3 and 21 characters long.' });
+  }
+
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -124,6 +130,7 @@ app.post('/login', async (req, res) => {
       const token = jwt.sign({ username }, JWT_SECRET, { expiresIn: '1h' });
       res.cookie('token', token, { httpOnly: true });
       res.json({ success: true, username });
+      deleteInactiveGuestAccounts()
     } else {
       res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
@@ -185,3 +192,16 @@ process.on('SIGINT', () => {
   }
   process.exit(0);
 });
+
+function deleteInactiveGuestAccounts() {
+  const inactivityDays = 1; // 設置不活躍天數
+  const inactiveTimestamp = Date.now() - (inactivityDays * 24 * 60 * 60 * 1000);
+
+  try {
+    const stmt = db.prepare("DELETE FROM users WHERE type = 'guest' AND timestamp < ?");
+    const deletedRows = stmt.run(inactiveTimestamp).changes;
+    console.log(`Deleted ${deletedRows} inactive guest accounts.`);
+  } catch (err) {
+    console.error('Error deleting inactive guest accounts:', err);
+  }
+}
