@@ -36,21 +36,26 @@
 }
 
 #players-in-room{
-    right: -355px;
+    right: 13px;
     background-color: rgba(0, 0, 0, 0.1);
     box-shadow: -10px 0 20px rgba(255, 255, 255, 0.0);
     height: 30px;
-    width: min(384px,100%);
+    /* width: min(384px,100%); */
+    width: 20px;
+    /* transition: width 0.3s ease-in; */
 }
 
 #players-in-room > .hiii{
    display: none;
 }
 
-#players-in-room > #close {
-    width: 18px;
-    margin-left: -6px;
-    padding-left: 2px;
+#close{
+    border-radius: 5px 5px 5px 5px;
+}
+
+.open > #players-in-room > #close {
+    width: 30px;
+    border-radius: 5px 0 0 5px;
 }
 
 

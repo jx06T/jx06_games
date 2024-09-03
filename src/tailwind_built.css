@@ -819,6 +819,10 @@ video {
   overflow-x: auto;
 }
 
+.overflow-x-hidden {
+  overflow-x: hidden;
+}
+
 .whitespace-pre-wrap {
   white-space: pre-wrap;
 }
