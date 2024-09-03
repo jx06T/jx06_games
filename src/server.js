@@ -167,10 +167,6 @@ app.get('/check-auth', (req, res) => {
 
 orbitoServer(io);
 
-app.get('/contact', (req, res) => {
-  res.sendFile(path.join(__dirname, 'pages/contact.html'));
-});
-
 app.get('/start', (req, res) => {
   res.sendFile(path.join(__dirname, 'client.html'));
 });
@@ -181,6 +177,14 @@ app.get('/orbito', (req, res) => {
 
 app.get('/orbito/:roomCode', (req, res) => {
   res.sendFile(path.join(__dirname, 'orbito/orbito.html'));
+});
+
+app.get('/contact', (req, res) => {
+  res.sendFile(path.join(__dirname, 'pages/contact.html'));
+});
+
+app.get('/privacy', (req, res) => {
+  res.sendFile(path.join(__dirname, 'pages/privacyPolicy.html'));
 });
 
 app.get('/', (req, res) => {
