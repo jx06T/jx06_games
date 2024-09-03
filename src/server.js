@@ -14,7 +14,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
-const orbitoHandler = require('./orbito/orbitoServer');
+const orbitoServer = require('./orbito/orbitoServer');
 app.use(express.json());
 app.use(cookieParser());
 
@@ -38,6 +38,8 @@ try {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       username TEXT UNIQUE,
       password TEXT
+      timestamp TEXT
+      type TEXT
       )
       `);
 
@@ -163,7 +165,11 @@ app.get('/check-auth', (req, res) => {
 
 });
 
-orbitoHandler(io);
+orbitoServer(io);
+
+app.get('/contact', (req, res) => {
+  res.sendFile(path.join(__dirname, 'pages/contact.html'));
+});
 
 app.get('/start', (req, res) => {
   res.sendFile(path.join(__dirname, 'client.html'));
