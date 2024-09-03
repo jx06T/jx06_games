@@ -187,6 +187,10 @@ app.get('/privacy', (req, res) => {
   res.sendFile(path.join(__dirname, 'pages/privacyPolicy.html'));
 });
 
+app.get('/collaboration', (req, res) => {
+  res.sendFile(path.join(__dirname, 'pages/collaborationInvitation.html'));
+});
+
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'home.html'));
 });

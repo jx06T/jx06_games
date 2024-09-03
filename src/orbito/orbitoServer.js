@@ -232,9 +232,10 @@ module.exports = function (io) {
 
         socket.on('again', () => {
             const { playerName, source, roomId, room, players, color } = getPlayerDetails(socket.decoded.username);
+            console.log(room, roomId, players, playerName, "aga")
 
-            if (!players.includes(playerName) || room.count % 2 == color || room.count2 % 3 + 1 != 1) {
-                orbitoIo.to(source).emit('actIllegal', { source: playerName, event: "skipMovePiece", time: getCurrentDateTime(), errorType: "Authentication or status error" });
+            if (!players.includes(playerName) || !room.over) {
+                orbitoIo.to(source).emit('actIllegal', { source: playerName, event: "again", time: getCurrentDateTime(), errorType: "Authentication or status error" });
                 console.log("數據竄改")
                 return
             }
