@@ -106,7 +106,7 @@ module.exports = function (io) {
             console.log(sourceName)
             const playerName = socket.decoded.username
 
-            rooms[roomId] = { ...newRoom, id: roomId }
+            rooms[roomId] = { ...JSON.parse(JSON.stringify(newRoom)), id: roomId }
 
             const target = people[sourceName].socketId;
             orbitoIo.to(target).emit('pairAccepted', roomId);
@@ -119,7 +119,7 @@ module.exports = function (io) {
         });
 
         socket.on('creatRoom', roomId => {
-            rooms[roomId] = { ...newRoom, id: roomId }
+            rooms[roomId] = { ...JSON.parse(JSON.stringify(newRoom)), id: roomId }
 
             orbitoIo.emit('roomUpdatad', rooms);
         });
