@@ -128,7 +128,7 @@ module.exports = function (io) {
             const playerName = socket.decoded.username
             const target = people[playerName].socketId;
 
-            if (!rooms[roomId] && roomId == "000000000000") {
+            if (roomId == "000000000000") {
                 rooms[roomId] = { ...newRoom, id: roomId }
             }
 
