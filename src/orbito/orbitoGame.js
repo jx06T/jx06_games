@@ -9,7 +9,6 @@ class LoadScene extends Phaser.Scene {
         })
     }
     init() {
-        // Mystate = 1
     }
     loadImages() {
         this.load.image("chessboard", './image/big_chessboard.png');
@@ -81,8 +80,6 @@ class GameScene extends Phaser.Scene {
             if (arraysEqual(checkerboard, newCheckerboard)) {
                 return
             }
-            // console.log(checkerboard, pCheckerboard, newCheckerboard)
-            // console.log("!")
             checkerboard = pCheckerboard
             this.rotatePiece()
         })
@@ -91,7 +88,6 @@ class GameScene extends Phaser.Scene {
             if (arraysEqual(checkerboard, newCheckerboard)) {
                 return
             }
-            // console.log("!???")
             this.movePiece_animation(checkerboard_object[y][x], nx, ny)
             checkerboard_object[ny][nx] = checkerboard_object[y][x]
             checkerboard_object[y][x] = null
@@ -102,25 +98,19 @@ class GameScene extends Phaser.Scene {
             if (arraysEqual(checkerboard, newCheckerboard)) {
                 return
             }
-            // console.log("DD")
             checkerboard = newCheckerboard
-            if (type == MyColor) {
-                return
-            }
             this.OtherMovingPieces(type, x, y)
         })
 
         socket.on('gameOver', (check) => {
             this.scene.launch("GameOver", { winner: check })
-            // alert(check)
         })
 
-        socket.on('reset', (check) => {
+        socket.on('reset', () => {
             checkerboard = [[-1, -1, -1, -1], [-1, -1, -1, -1], [-1, -1, -1, -1], [-1, -1, -1, -1]]
             checkerboard_object = [[], [], [], []]
             this.scene.stop('GameOver');
             this.scene.restart()
-            // alert(check)
         })
     }
 
@@ -170,11 +160,10 @@ class GameScene extends Phaser.Scene {
             if (Mystate != 1) {
                 return
             }
-            Mystate += 1
+            Mystate = 2
             socket.emit('skipMovePiece');
             this.check.setScale(1)
             this.check.setTint()
-            // console.log("ch")
         })
 
         this.add.image(600, 450, 'chessboard').setOrigin(0.5).setScale(1.1);
@@ -201,14 +190,11 @@ class GameScene extends Phaser.Scene {
                 return
             }
             this.rotatePiece()
-            // console.log("rr")
-            socket.emit('rotatePiece');
-            Mystate = 0
             this.button.setScale(1.3)
             this.button.setTint()
+            socket.emit('rotatePiece');
+            Mystate = 0
         })
-
-
 
         // Create black pieces
         for (let i = 0; i < 8; i++) {
@@ -229,7 +215,6 @@ class GameScene extends Phaser.Scene {
         this.InitializeChessboard()
 
         // Drag and drop functionality
-
         this.input.on('pointerover', (pointer, justOver) => {
             justOver.forEach(gameObject => {
                 if (!this.canMoved(gameObject)) {
@@ -288,6 +273,7 @@ class GameScene extends Phaser.Scene {
                 this.putPiece(finalX, finalY, gameObject)
             }
         });
+
         // this.scene.launch('DebugScene')
         // this.scene.launch("GameOver", { winner: "W" })
     }
@@ -330,7 +316,6 @@ class GameScene extends Phaser.Scene {
         for (let i = 0; i < 4; i++) {
             for (let j = 0; j < 4; j++) {
                 if (checkerboard[i][j] != -1) {
-                    // console.log(checkerboard[i][j])
                     this.OtherMovingPieces(checkerboard[i][j], j, i)
                 }
             }
@@ -362,21 +347,22 @@ class GameScene extends Phaser.Scene {
                 const centerX = this.convertX(j)
                 const centerY = this.convertY(i)
                 if (Math.abs(finalX - centerX) < 73 && Math.abs(finalY - centerY) < 73) {
+
                     if (checkerboard[i][j] != -1) {
                         this.movePiece_animation(gameObject, gameObject.getData('color') * 6.5 + -1.75, i)
                         return
                     }
+
                     gameObject.x = centerX
                     gameObject.y = centerY
                     checkerboard[i][j] = gameObject.getData('color')
                     checkerboard_object[i][j] = gameObject
-                    gameObject.setData('state', 1)
 
+                    gameObject.setData('state', 1)
                     gameObject.setData('ox', j)
                     gameObject.setData('oy', i)
 
-                    // console.log(checkerboard, "99", Mystate)
-                    Mystate += 1
+                    Mystate = 3
                     socket.emit('putPiece', j, i);
                     return
                 }
@@ -391,6 +377,7 @@ class GameScene extends Phaser.Scene {
                 const centerX = this.convertX(j)
                 const centerY = this.convertY(i)
                 if (Math.abs(finalX - centerX) < 73 && Math.abs(finalY - centerY) < 73) {
+
                     if (checkerboard[i][j] != -1) {
                         this.graphics.fillStyle(0xff0000, 0.3);
                         this.graphics.fillRect(centerX - 72, centerY - 72, 145, 145);
@@ -422,8 +409,7 @@ class GameScene extends Phaser.Scene {
                     checkerboard_object[i][j] = gameObject
 
                     gameObject.setData('state', 1)
-                    // console.log(checkerboard, checkerboard_object, "909", Mystate)
-                    Mystate += 1
+                    Mystate = 2
                     socket.emit('movePiece', ox, oy, j, i);
                     return
                 }
@@ -435,14 +421,15 @@ class GameScene extends Phaser.Scene {
         const ox = gameObject.getData('ox')
         const oy = gameObject.getData('oy')
         this.graphics.clear();
+
         for (let i = 0; i < 4; i++) {
             for (let j = 0; j < 4; j++) {
                 const centerX = this.convertX(j)
                 const centerY = this.convertY(i)
                 if (Math.abs(finalX - centerX) < 73 && Math.abs(finalY - centerY) < 73) {
-                    if (checkerboard[i][j] != -1 || Math.abs(oy - i) > 1 || Math.abs(ox - j) > 1 || (Math.abs(oy - i) == 1 && Math.abs(ox - j) == 1)) {
+
+                    if ((oy != j && ox != i && checkerboard[i][j] != -1) || Math.abs(oy - i) > 1 || Math.abs(ox - j) > 1 || (Math.abs(oy - i) == 1 && Math.abs(ox - j) == 1)) {
                         this.graphics.fillStyle(0xff0000, 0.3);
-                        const size = 100; // 正方形边长
                         this.graphics.fillRect(centerX - 72, centerY - 72, 145, 145);
                     }
                     return
@@ -462,7 +449,6 @@ class GameScene extends Phaser.Scene {
         for (let i = 0; i < n; i++) {
             for (let j = 0; j < n; j++) {
                 const t = this.getPreviousCoordinate(i, j)
-                // console.log(i, j, t)
                 rotatedMatrix[i][j] = matrix[t[0]][t[1]];
             }
         }
@@ -513,7 +499,6 @@ class GameScene extends Phaser.Scene {
             }
         }
         checkerboard_object = this.rotationMatrix(checkerboard_object)
-        // console.log(checkerboard)
     }
 
     update(time, delta) {
@@ -540,7 +525,7 @@ class GameScene extends Phaser.Scene {
                 break;
         }
 
-        const animationSpeed = 0.005; // 調整此值以改變動畫速度
+        const animationSpeed = 0.005;
 
         this.animatingPieces.forEach((piece, index) => {
             piece.setData('moveProgress', piece.getData('moveProgress') + animationSpeed * delta);
@@ -592,13 +577,11 @@ class DebugScene extends Phaser.Scene {
 
         graphics.strokePath();
 
-        // 創建右上角座標顯示文本
         this.coordsText = this.add.text(width - 100, 10, '', {
             font: '24px Arial',
             color: '#ffffff'
         }).setOrigin(1, 0);
 
-        // 更新滑鼠座標
         this.input.on('pointermove', (pointer) => {
             this.coordsText.setText(`X: ${Math.floor(pointer.x)}, Y: ${Math.floor(pointer.y)}`);
         });

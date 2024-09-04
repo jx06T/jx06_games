@@ -20,7 +20,16 @@ module.exports = function (io) {
     let rooms = {}
     const orbitoIo = io.of('/orbito');
 
-    const newRoom = { people: [], players: [], playerLimit: 2, over: false, count2: 0, count: 0, checkerboard: [[-1, -1, -1, -1], [-1, -1, -1, -1], [-1, -1, -1, -1], [-1, -1, -1, -1]] }
+    // const newRoom = { people: [], players: [], playerLimit: 2, over: false, count2: 0, count: 0, checkerboard: [[-1, -1, -1, -1], [-1, -1, -1, -1], [-1, -1, -1, -1], [-1, -1, -1, -1]] }
+    const newRoom = Object.freeze({
+        people: [],
+        players: [],
+        playerLimit: 2,
+        over: false,
+        count2: 0,
+        count: 0,
+        checkerboard: [[-1, -1, -1, -1], [-1, -1, -1, -1], [-1, -1, -1, -1], [-1, -1, -1, -1]]
+    });
 
     const rotationMatrix = (matrix) => {
         const n = matrix.length;
@@ -129,7 +138,7 @@ module.exports = function (io) {
             const target = people[playerName].socketId;
 
             if (roomId == "000000000000") {
-                rooms[roomId] = { ...newRoom, id: roomId }
+                rooms[roomId] = { ...JSON.parse(JSON.stringify(newRoom)), id: roomId }
             }
 
             const currentRoom = rooms[roomId]
@@ -210,6 +219,7 @@ module.exports = function (io) {
 
             room.people.forEach(otherName => {
                 const target = people[otherName].socketId;
+                orbitoIo.to(target).emit('roomUpdatad', rooms);
                 orbitoIo.to(target).emit('pieceMoved', checkerboard, x, y, nx, ny, color);
             });
 
@@ -256,7 +266,7 @@ module.exports = function (io) {
 
         socket.on('exchange', () => {
             const { playerName, source, roomId, room, players, color } = getPlayerDetails(socket.decoded.username);
-            
+
             if (!players.includes(playerName)) {
                 orbitoIo.to(source).emit('actIllegal', { source: playerName, event: "skipMovePiece", time: getCurrentDateTime(), errorType: "Authentication or status error" });
                 console.log("數據竄改")
@@ -316,10 +326,9 @@ module.exports = function (io) {
 
             checkerboard[y][x] = players.indexOf(playerName)
 
-            // const otherName = players.find(e => e != playerName)
-
             room.people.forEach(otherName => {
                 const target = people[otherName].socketId;
+                orbitoIo.to(target).emit('roomUpdatad', rooms);
                 orbitoIo.to(target).emit('piecePut', checkerboard, x, y, color);
             })
 
@@ -385,16 +394,16 @@ module.exports = function (io) {
                 if (room.over == true) {
                     return
                 }
-                
-                console.log(i,room)
+
+                console.log(i, room)
 
                 const pCheckerboard = JSON.parse(JSON.stringify(room.checkerboard));
                 room.checkerboard = rotationMatrix(room.checkerboard)
 
                 room.people.forEach(otherName => {
                     const target = people[otherName].socketId;
-                    orbitoIo.to(target).emit('pieceRotated', room.checkerboard, pCheckerboard);
                     orbitoIo.to(target).emit('roomUpdatad', rooms);
+                    orbitoIo.to(target).emit('pieceRotated', room.checkerboard, pCheckerboard);
                 })
 
                 const check = checkGameOver(room.checkerboard)

@@ -6,7 +6,7 @@ function createSimpleModal(title, content = "") {
     // Create the popup div
     const popup = document.createElement('div');
     popup.className = 'shadow-RB fixed -top-72 max-w-96 min-h-32 z-30 rounded-2xl w-full bg-stone-900 p-5 transition-all duration-300';
-
+    
     // Create the title h1
     const titleElement = document.createElement('h1');
     titleElement.className = 'mb-1 text-lg';

@@ -103,10 +103,9 @@
 }
 @media screen and (max-width: 500px) {
     #gameD{
-        width: 96%;
-        margin-left: 2%;
-        max-height: 90vh;
-
+        width: 98%;
+        margin-left: 1%;
+        max-height: 84vh;
     }
     
 }
