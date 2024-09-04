@@ -223,7 +223,7 @@ module.exports = function (io) {
                 orbitoIo.to(target).emit('pieceMoved', checkerboard, x, y, nx, ny, color);
             });
 
-            console.log(room, roomId, players, playerName, checkerboard, "mp")
+            console.log(room, playerName, checkerboard, "mp")
         });
 
         socket.on('skipMovePiece', () => {
@@ -237,12 +237,12 @@ module.exports = function (io) {
 
             room.count2 += 1;
 
-            console.log(room, roomId, players, playerName, "smp")
+            console.log(room, playerName, "smp")
         });
 
         socket.on('again', () => {
             const { playerName, source, roomId, room, players, color } = getPlayerDetails(socket.decoded.username);
-            console.log(room, roomId, players, playerName, "aga")
+            console.log(room, playerName, "aga")
 
             if (!players.includes(playerName) || !room.over) {
                 orbitoIo.to(source).emit('actIllegal', { source: playerName, event: "again", time: getCurrentDateTime(), errorType: "Authentication or status error" });
@@ -261,7 +261,7 @@ module.exports = function (io) {
                 orbitoIo.to(target).emit('reset');
             })
 
-            console.log(room, roomId, players, playerName, "aga")
+            console.log(room, playerName, "aga")
         });
 
         socket.on('exchange', () => {
@@ -285,7 +285,7 @@ module.exports = function (io) {
                 orbitoIo.to(target).emit('reset');
             })
 
-            console.log(room, roomId, players, playerName, "exc")
+            console.log(room, playerName, "exc")
         });
 
         socket.on('giveUp', () => {
@@ -302,7 +302,7 @@ module.exports = function (io) {
                 return
             }
 
-            console.log(room, roomId, players, playerName, "gu")
+            console.log(room, playerName, "gu")
         });
 
         socket.on('putPiece', (x, y) => {
@@ -332,7 +332,7 @@ module.exports = function (io) {
                 orbitoIo.to(target).emit('piecePut', checkerboard, x, y, color);
             })
 
-            console.log(room, roomId, players, playerName, checkerboard, "pp")
+            console.log(room, playerName, "pp")
         });
 
         socket.on('rotatePiece', () => {
