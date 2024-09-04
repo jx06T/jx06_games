@@ -50,7 +50,7 @@ db.pragma('journal_mode = WAL');
 
 
 // JWT 密鑰
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = 'whatafunnyapple'
 const InsertUser = db.prepare('INSERT INTO users (username, password, type, timestamp) VALUES (?, ?, ?, ?)');
 const GetUserByUserName = db.prepare('SELECT * FROM users WHERE username = ?');
 
